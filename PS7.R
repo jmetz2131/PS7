@@ -35,15 +35,85 @@ sg.int<-function(g,...,lower,upper)
 install.packages("SparseGrid")
 library(SparseGrid)
 
-##Attempting the integration itself with my newly defined g
-lower_example <- c(1:4)
-upper_example<- c(10:13)
-sg.int(g, lower=lower_example, upper=upper_example)
+##My example function
+g <-function(x){
+  return(4*x + 5)
+}
 
-######Changing the dimensions
+##Attempting the integration itself with my newly defined g
+theLower <- c(1,2)
+theUpper<- c(10,11)
+sg.int(g, lower=theLower, upper=theUpper)
+
+###########Changing the dimensions
+
 ##I am now checking the help files for SparseGrid
 ?SparseGrid
 
 ##my attempt at allowing for more dimensions
-createSparseGrid()
+sg.int.dim<-function(g,dim,lower,upper)
+  
+{ require("SparseGrid")
+  
+  lower<-floor(lower) ##this ensures that the lower bound values are all rounded down to whole numbers
+  
+  upper<-ceiling(upper) ##this ensures that the upper bound values are all rounded up to whole numbers
+  
+  if (any(lower>upper)) stop("lower must be smaller than upper")
+  ##this if statement ensures that no one lower value can be greater than any one upper value
+  
+  ##this if statement serves as a reminder to the user to input a number of dimensions that
+  ##equals the number of elements in the lower and upper bound vectors
+  if(dim != c(length(lower)) | dim != c(length(upper))){
+    stop("Make sure to check that number of dimensions equals the amount of elements in
+         the lower bound and upper bound vectors!")
+  }
+  
+  ##myGrid and gridss helps me to ensure as many possibilities as possible for
+  ##changing the dimensions
+  myGrid <- function(i){
+    seq(lower[i], upper[i]-1, by=1)
+  }
+  
+  gridss<-as.matrix(expand.grid(lapply(1:dim, myGrid)))
+  
+  ##ensure for the createIntegrationGrid that it can accept any number of dimensions
+  sp.grid <- createIntegrationGrid('KPU', dimension=dim,k=5) 
+  
+  nodes<-gridss[1,]+sp.grid$nodes
+  
+  weights<-sp.grid$weights
+  
+  for (i in 2:nrow(gridss))
+  {
+    nodes<-rbind(nodes,gridss[i,]+sp.grid$nodes)  
+    
+    weights<-c(weights,sp.grid$weights)
+  }
+  
+  gx.sp <- apply(nodes, 1, g)
+  val.sp <- gx.sp %*%weights
+  val.sp
+}
 
+##This includes 4 elements
+lower_example <- c(1:4)
+upper_example<- c(4:7)
+
+##This includes 3 elements
+myLower <- c(1:3)
+myUpper <- c(4:6)
+
+##checking that I can change the dimensions
+sg.int.dim(g, dim=3,lower=lower_example, upper=upper_example)
+##This proved the if statement work because the dimensions was fewer than both vectors.
+
+sg.int.dim(g, dim=3, lower=myLower, upper=upper_example)
+##This proved the same thing as above that even if the dimensions matches the number
+##of elements in the lower bound, not matching the number in the upper bound example
+##returns the error message.
+
+sg.int.dim(g, dim=3, lower=myLower, upper=myUpper)
+##This example outputs an actual answer, showing the number of dimensions can be changed
+
+sg.int.dim(g, dim=4, lower=lower_example, upper=upper_example)
