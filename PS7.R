@@ -126,17 +126,15 @@ context("Correct Inputs and Outputs")
 
 test_that("User Input", {
   myfunction <- function(x){
-    return(3*x^2)
+    return(3*x^2) ##This is the test function I am using
   }
   expect_error(sg.int.dim(g=myfunction, dim=2, lower=2, upper=4),
          "Make sure to check that number of dimensions equals the amount of elements in
-         the lower bound and upper bound vectors!")
+         the lower bound and upper bound vectors!") ##this verifies the error message the user will recieve if
+  ##they make this error
+  
+  expect_error(sg.int.dim(g=myfunction, dim=1, lower=5, upper=4),
+               "lower must be smaller than upper")
+  
  })
 
-test_that("Correct Output", {
-  myfunction <- function(x){
-    return(3*x^2)
-  }
-  expect_that(sg.int(g=myfunction,lower=2, upper=4),
-              equals(56))
-})
