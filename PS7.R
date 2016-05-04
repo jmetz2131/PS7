@@ -117,3 +117,26 @@ sg.int.dim(g, dim=3, lower=myLower, upper=myUpper)
 ##This example outputs an actual answer, showing the number of dimensions can be changed
 
 sg.int.dim(g, dim=4, lower=lower_example, upper=upper_example)
+
+
+#######Writing tests for testthat
+library("testthat")
+
+context("Correct Inputs and Outputs")
+
+test_that("User Input", {
+  myfunction <- function(x){
+    return(3*x^2)
+  }
+  expect_error(sg.int.dim(g=myfunction, dim=2, lower=2, upper=4),
+         "Make sure to check that number of dimensions equals the amount of elements in
+         the lower bound and upper bound vectors!")
+ })
+
+test_that("Correct Output", {
+  myfunction <- function(x){
+    return(3*x^2)
+  }
+  expect_that(sg.int(g=myfunction,lower=2, upper=4),
+              equals(56))
+})
